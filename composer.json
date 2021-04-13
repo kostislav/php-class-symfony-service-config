@@ -1,0 +1,29 @@
+{
+  "name": "kostislav/php-class-symfony-service-config",
+  "description": "Class-based service configuration for Symfony",
+  "authors": [
+    {
+      "name": "Jan Judas",
+      "email": "jan@judas.cz"
+    }
+  ],
+  "require": {
+    "php": ">=8.0",
+    "symfony/config": "^5.2",
+    "symfony/dependency-injection": "^5.2"
+  },
+  "require-dev": {
+    "phpunit/phpunit": "^9.5.1",
+    "symfony/http-kernel": "^5.2"
+  },
+  "autoload": {
+    "psr-4": {
+      "Kostislav\\ClassConfig\\": "src/"
+    }
+  },
+  "autoload-dev": {
+    "psr-0": {
+      "": "test/"
+    }
+  }
+}
