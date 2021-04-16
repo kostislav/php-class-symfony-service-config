@@ -7,10 +7,20 @@ use Symfony\Component\HttpKernel\Kernel;
 
 class TestKernel extends Kernel {
     private array $configClasses;
+    private $tempDir;
 
-    public function __construct(array $configClasses) {
+    public function __construct($tempDir, array $configClasses) {
         parent::__construct('test', true);
+        $this->tempDir = $tempDir;
         $this->configClasses = $configClasses;
+    }
+
+    public function getBuildDir(): string {
+        return $this->tempDir;
+    }
+
+    public function getCacheDir() {
+        return $this->tempDir;
     }
 
     public function registerBundles() {
