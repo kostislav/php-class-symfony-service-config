@@ -30,20 +30,37 @@ class ConfigClassServiceConfigLoader extends Loader {
             if ($method->getModifiers() & ReflectionMethod::IS_STATIC) {
                 continue;
             }
-            $annotation = $method->getAttributes(ServiceDefinition::class)[0]->newInstance();
-            $name = $method->name;
-            $returnType = $method->getReturnType();
-            if ($returnType == null) {
-                throw new InvalidArgumentException(sprintf('Method %s does not specify a return type.', $name));
+            $methodName = $method->getName();
+            $serviceDefinitionAnnotation = $this->getAttributeOrNull($method, ServiceDefinition::class);
+            if ($serviceDefinitionAnnotation != null) {
+                $returnType = $method->getReturnType();
+                if ($returnType == null) {
+                    throw new InvalidArgumentException(sprintf('Method %s does not specify a return type.', $methodName));
+                }
+                $args = [];
+                foreach ($method->getParameters() as $parameter) {
+                    $dependencyName = $parameter->getName();
+                    $serviceAnnotation = $this->getAttributeOrNull($parameter, Service::class);
+                    if ($serviceAnnotation != null) {
+                        $dependencyName = $serviceAnnotation->getName();
+                    }
+                    $args[] = new Reference($dependencyName);
+                }
+                $definition = new Definition($returnType, $args);
+                $definition->setPublic($serviceDefinitionAnnotation->isPublic());
+                $serviceName = $serviceDefinitionAnnotation->getName() ?? $method->name;
+                $definition->setFactory([new Reference(self::CONFIG_OBJECT_SERVICE_NAME), $methodName]);
+                $this->container->setDefinition($serviceName, $definition);
             }
-            $args = [];
-            foreach ($method->getParameters() as $parameter) {
-                $args[] = new Reference($parameter->name);
-            }
-            $definition = new Definition($returnType, $args);
-            $definition->setPublic($annotation->isPublic());
-            $definition->setFactory([new Reference(self::CONFIG_OBJECT_SERVICE_NAME), $name]);
-            $this->container->setDefinition($name, $definition);
+        }
+    }
+
+    private function getAttributeOrNull($element, $attributeClass) {
+        $attributes = $element->getAttributes($attributeClass);
+        if (empty($attributes)) {
+            return null;
+        } else {
+            return $attributes[0]->newInstance();
         }
     }
 }
