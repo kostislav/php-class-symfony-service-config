@@ -4,6 +4,7 @@ use ConfigClasses\Invalid\NoReturnTypeConfig;
 use ConfigClasses\Valid\AlternativeNameConfig;
 use ConfigClasses\Valid\CombinedServiceConfig;
 use ConfigClasses\Valid\Import\ImportingConfig;
+use ConfigClasses\Valid\Import\TransitivelyImportingConfig;
 use ConfigClasses\Valid\ParameterConfig;
 use ConfigClasses\Valid\SimpleConfig;
 use ConfigClasses\Valid\TagConfig;
@@ -81,6 +82,15 @@ class SymfonyIntegrationTest extends TestCase {
         $service = $container->get('importingService');
 
         assertThat($service->combinedValue(), equalTo('imp imp'));
+    }
+
+    /** @test */
+    function sameConfigurationCanBeImportedMultipleTimes() {
+        $container = $this->buildContainer(TransitivelyImportingConfig::class);
+
+        $service = $container->get('combinedImportingService');
+
+        assertThat($service->combinedValue(), equalTo('imp imp imp'));
     }
 
     /** @test */

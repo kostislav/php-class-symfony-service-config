@@ -23,6 +23,11 @@ class ConfigClassServiceConfigLoader extends Loader {
 
     public function load($resource, string $type = null) {
         $class = new ReflectionClass($resource);
+        $configServiceName = $class->getName();
+
+        if ($this->container->hasDefinition($configServiceName)) {
+            return;
+        }
 
         $importAnnotation = $this->getAttributeOrNull($class, Import::class);
         if ($importAnnotation != null) {
@@ -31,7 +36,7 @@ class ConfigClassServiceConfigLoader extends Loader {
             }
         }
 
-        $this->container->setDefinition($class->getName(), new Definition($class->getName()));
+        $this->container->setDefinition($configServiceName, new Definition($configServiceName));
         foreach ($class->getMethods() as $method) {
             if ($method->getModifiers() & ReflectionMethod::IS_STATIC) {
                 continue;
@@ -67,7 +72,7 @@ class ConfigClassServiceConfigLoader extends Loader {
                     $definition->addTag($tag->getName(), $tag->getAttributes());
                 }
 
-                $definition->setFactory([new Reference($class->getName()), $methodName]);
+                $definition->setFactory([new Reference($configServiceName), $methodName]);
                 $this->container->setDefinition($serviceName, $definition);
             }
         }
