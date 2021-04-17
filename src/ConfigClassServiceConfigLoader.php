@@ -11,8 +11,6 @@ use Symfony\Component\DependencyInjection\Exception\InvalidArgumentException;
 use Symfony\Component\DependencyInjection\Reference;
 
 class ConfigClassServiceConfigLoader extends Loader {
-    private const CONFIG_OBJECT_SERVICE_NAME = 'injection_config_object';
-
     private ContainerBuilder $container;
 
     public function __construct(ContainerBuilder $container) {
@@ -25,7 +23,15 @@ class ConfigClassServiceConfigLoader extends Loader {
 
     public function load($resource, string $type = null) {
         $class = new ReflectionClass($resource);
-        $this->container->setDefinition(self::CONFIG_OBJECT_SERVICE_NAME, new Definition($class->name));
+
+        $importAnnotation = $this->getAttributeOrNull($class, Import::class);
+        if ($importAnnotation != null) {
+            foreach($importAnnotation->getConfigClasses() as $importedConfig) {
+                $this->load($importedConfig);
+            }
+        }
+
+        $this->container->setDefinition($class->getName(), new Definition($class->getName()));
         foreach ($class->getMethods() as $method) {
             if ($method->getModifiers() & ReflectionMethod::IS_STATIC) {
                 continue;
@@ -61,7 +67,7 @@ class ConfigClassServiceConfigLoader extends Loader {
                     $definition->addTag($tag->getName(), $tag->getAttributes());
                 }
 
-                $definition->setFactory([new Reference(self::CONFIG_OBJECT_SERVICE_NAME), $methodName]);
+                $definition->setFactory([new Reference($class->getName()), $methodName]);
                 $this->container->setDefinition($serviceName, $definition);
             }
         }

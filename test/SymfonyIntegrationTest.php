@@ -2,6 +2,7 @@
 
 use ConfigClasses\Valid\AlternativeNameConfig;
 use ConfigClasses\Valid\CombinedServiceConfig;
+use ConfigClasses\Valid\Import\ImportingConfig;
 use ConfigClasses\Valid\ParameterConfig;
 use ConfigClasses\Valid\SimpleConfig;
 use ConfigClasses\Valid\TagConfig;
@@ -18,7 +19,7 @@ include __DIR__ . '/../vendor/phpunit/phpunit/src/Framework/Assert/Functions.php
 class SymfonyIntegrationTest extends TestCase {
     /** @test */
     function createsSimpleController() {
-        $container = $this->buildContainer([SimpleConfig::class]);
+        $container = $this->buildContainer(SimpleConfig::class);
 
         $service = $container->get('someService');
 
@@ -27,7 +28,7 @@ class SymfonyIntegrationTest extends TestCase {
 
     /** @test */
     function injectsOtherDefinedServices() {
-        $container = $this->buildContainer([CombinedServiceConfig::class]);
+        $container = $this->buildContainer(CombinedServiceConfig::class);
 
         $service = $container->get('outerService');
 
@@ -36,14 +37,14 @@ class SymfonyIntegrationTest extends TestCase {
 
     /** @test */
     function servicesAreNotPublicByDefault() {
-        $container = $this->buildContainer([CombinedServiceConfig::class]);
+        $container = $this->buildContainer(CombinedServiceConfig::class);
 
         self::assertThrows(ServiceNotFoundException::class, fn() => $container->get('innerService1'));
     }
 
     /** @test */
     function servicesCanBeExplicitlyNamed() {
-        $container = $this->buildContainer([AlternativeNameConfig::class]);
+        $container = $this->buildContainer(AlternativeNameConfig::class);
 
         $service = $container->get('publicService');
 
@@ -52,7 +53,7 @@ class SymfonyIntegrationTest extends TestCase {
 
     /** @test */
     function canInjectParameters() {
-        $container = $this->buildContainer([ParameterConfig::class], [
+        $container = $this->buildContainer(ParameterConfig::class, [
             'param1' => 'aaa',
             'param.two' => 'bbb'
         ]);
@@ -64,20 +65,27 @@ class SymfonyIntegrationTest extends TestCase {
 
     /** @test */
     function canBeTagged() {
-        $container = $this->buildContainer([TagConfig::class]);
+        $container = $this->buildContainer(TagConfig::class);
 
         $serviceTags = $container->findTaggedServiceIds('tag.name');
 
         assertThat($serviceTags, equalTo(['service1' => [['attr1' => 'something']]]));
     }
 
-    private function buildContainer(array $configClasses, array $parameters = []): TaggedContainerInterface {
+    /** @test */
+    function canImportAnotherConfiguration() {
+        $container = $this->buildContainer(ImportingConfig::class);
+
+        $service = $container->get('importingService');
+
+        assertThat($service->combinedValue(), equalTo('imp imp'));
+    }
+
+    private function buildContainer(string $configClass, array $parameters = []): TaggedContainerInterface {
         $containerBuilder = new ContainerBuilder();
         $containerBuilder->getParameterBag()->add($parameters);
         $loader = new ConfigClassServiceConfigLoader($containerBuilder);
-        foreach ($configClasses as $configClass) {
-            $loader->load($configClass);
-        }
+        $loader->load($configClass);
         $containerBuilder->compile();
         return $containerBuilder;
     }
