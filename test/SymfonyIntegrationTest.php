@@ -4,11 +4,12 @@ use ConfigClasses\Valid\AlternativeNameConfig;
 use ConfigClasses\Valid\CombinedServiceConfig;
 use ConfigClasses\Valid\ParameterConfig;
 use ConfigClasses\Valid\SimpleConfig;
+use ConfigClasses\Valid\TagConfig;
 use Kostislav\ClassConfig\ConfigClassServiceConfigLoader;
 use PHPUnit\Framework\TestCase;
-use Symfony\Component\DependencyInjection\Container;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Exception\ServiceNotFoundException;
+use Symfony\Component\DependencyInjection\TaggedContainerInterface;
 use function PHPUnit\Framework\assertThat;
 use function PHPUnit\Framework\equalTo;
 
@@ -61,7 +62,16 @@ class SymfonyIntegrationTest extends TestCase {
         assertThat($service->value(), equalTo('aaa bbb'));
     }
 
-    private function buildContainer(array $configClasses, array $parameters = []): Container {
+    /** @test */
+    function canBeTagged() {
+        $container = $this->buildContainer([TagConfig::class]);
+
+        $serviceTags = $container->findTaggedServiceIds('tag.name');
+
+        assertThat($serviceTags, equalTo(['service1' => [['attr1' => 'something']]]));
+    }
+
+    private function buildContainer(array $configClasses, array $parameters = []): TaggedContainerInterface {
         $containerBuilder = new ContainerBuilder();
         $containerBuilder->getParameterBag()->add($parameters);
         $loader = new ConfigClassServiceConfigLoader($containerBuilder);

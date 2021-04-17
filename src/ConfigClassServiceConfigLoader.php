@@ -55,6 +55,12 @@ class ConfigClassServiceConfigLoader extends Loader {
                 $definition = new Definition($returnType, $args);
                 $definition->setPublic($serviceDefinitionAnnotation->isPublic());
                 $serviceName = $serviceDefinitionAnnotation->getName() ?? $method->getName();
+
+                foreach($method->getAttributes(Tag::class) as $tagAttribute) {
+                    $tag = $tagAttribute->newInstance();
+                    $definition->addTag($tag->getName(), $tag->getAttributes());
+                }
+
                 $definition->setFactory([new Reference(self::CONFIG_OBJECT_SERVICE_NAME), $methodName]);
                 $this->container->setDefinition($serviceName, $definition);
             }
