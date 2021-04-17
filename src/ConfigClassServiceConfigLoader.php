@@ -39,16 +39,22 @@ class ConfigClassServiceConfigLoader extends Loader {
                 }
                 $args = [];
                 foreach ($method->getParameters() as $parameter) {
-                    $dependencyName = $parameter->getName();
-                    $serviceAnnotation = $this->getAttributeOrNull($parameter, Service::class);
-                    if ($serviceAnnotation != null) {
-                        $dependencyName = $serviceAnnotation->getName();
+                    $parameterAnnotation = $this->getAttributeOrNull($parameter, Parameter::class);
+                    if ($parameterAnnotation != null) {
+                        $parameterName = $parameterAnnotation->getName() ?? $parameter->getName();
+                        $args[] = "%{$parameterName}%";
+                    } else {
+                        $dependencyName = $parameter->getName();
+                        $serviceAnnotation = $this->getAttributeOrNull($parameter, Service::class);
+                        if ($serviceAnnotation != null) {
+                            $dependencyName = $serviceAnnotation->getName();
+                        }
+                        $args[] = new Reference($dependencyName);
                     }
-                    $args[] = new Reference($dependencyName);
                 }
                 $definition = new Definition($returnType, $args);
                 $definition->setPublic($serviceDefinitionAnnotation->isPublic());
-                $serviceName = $serviceDefinitionAnnotation->getName() ?? $method->name;
+                $serviceName = $serviceDefinitionAnnotation->getName() ?? $method->getName();
                 $definition->setFactory([new Reference(self::CONFIG_OBJECT_SERVICE_NAME), $methodName]);
                 $this->container->setDefinition($serviceName, $definition);
             }

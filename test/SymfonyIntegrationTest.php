@@ -2,6 +2,7 @@
 
 use ConfigClasses\Valid\AlternativeNameConfig;
 use ConfigClasses\Valid\CombinedServiceConfig;
+use ConfigClasses\Valid\ParameterConfig;
 use ConfigClasses\Valid\SimpleConfig;
 use Kostislav\ClassConfig\ConfigClassServiceConfigLoader;
 use PHPUnit\Framework\TestCase;
@@ -48,8 +49,21 @@ class SymfonyIntegrationTest extends TestCase {
         assertThat($service->combinedValue(), equalTo('serv1 serv2'));
     }
 
-    private function buildContainer(array $configClasses): Container {
+    /** @test */
+    function canInjectParameters() {
+        $container = $this->buildContainer([ParameterConfig::class], [
+            'param1' => 'aaa',
+            'param.two' => 'bbb'
+        ]);
+
+        $service = $container->get('parameterizedService');
+
+        assertThat($service->value(), equalTo('aaa bbb'));
+    }
+
+    private function buildContainer(array $configClasses, array $parameters = []): Container {
         $containerBuilder = new ContainerBuilder();
+        $containerBuilder->getParameterBag()->add($parameters);
         $loader = new ConfigClassServiceConfigLoader($containerBuilder);
         foreach ($configClasses as $configClass) {
             $loader->load($configClass);
