@@ -1,5 +1,6 @@
 <?php
 
+use ConfigClasses\Invalid\NoReturnTypeConfig;
 use ConfigClasses\Valid\AlternativeNameConfig;
 use ConfigClasses\Valid\CombinedServiceConfig;
 use ConfigClasses\Valid\Import\ImportingConfig;
@@ -9,6 +10,7 @@ use ConfigClasses\Valid\TagConfig;
 use Kostislav\ClassConfig\ConfigClassServiceConfigLoader;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
+use Symfony\Component\DependencyInjection\Exception\InvalidArgumentException;
 use Symfony\Component\DependencyInjection\Exception\ServiceNotFoundException;
 use Symfony\Component\DependencyInjection\TaggedContainerInterface;
 use function PHPUnit\Framework\assertThat;
@@ -79,6 +81,11 @@ class SymfonyIntegrationTest extends TestCase {
         $service = $container->get('importingService');
 
         assertThat($service->combinedValue(), equalTo('imp imp'));
+    }
+
+    /** @test */
+    function failsForServiceMethodWithoutReturnType() {
+        self::assertThrows(InvalidArgumentException::class, fn() => $this->buildContainer(NoReturnTypeConfig::class));
     }
 
     private function buildContainer(string $configClass, array $parameters = []): TaggedContainerInterface {
