@@ -1,6 +1,7 @@
 {
   "name": "kostislav/php-class-symfony-service-config",
   "description": "Class-based service configuration for Symfony",
+  "license": "MIT",
   "authors": [
     {
       "name": "Jan Judas",
