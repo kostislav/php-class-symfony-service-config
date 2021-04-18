@@ -1,5 +1,6 @@
 # PHP-based Symfony service configuration
 
+[![Version](https://poser.pugx.org/kostislav/php-class-symfony-service-config/version)](//packagist.org/packages/kostislav/php-class-symfony-service-config)
 ![Build status](https://github.com/kostislav/php-class-symfony-service-config/actions/workflows/php.yml/badge.svg)
 
 The Symfony framework offers three methods of configuring its [Dependency Injection Container](https://symfony.com/doc/current/service_container.html#explicitly-configuring-services-and-arguments): XML configuration, YAML configuration and PHP configuration.
