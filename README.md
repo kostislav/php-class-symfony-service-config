@@ -1,5 +1,7 @@
 # PHP-based Symfony service configuration
 
+![Build status](https://github.com/kostislav/php-class-symfony-service-config/actions/workflows/php.yml/badge.svg)
+
 The Symfony framework offers three methods of configuring its [Dependency Injection Container](https://symfony.com/doc/current/service_container.html#explicitly-configuring-services-and-arguments): XML configuration, YAML configuration and PHP configuration.
 The XML and YAML approaches are a little developer-unfriendly because of things like missing IDE completion. The PHP approach tries to solve these problems, but instead of using PHP directly, it invents a DSL on top of PHP and in turn suffers from the same problems, albeit to a lesser degree.
 
