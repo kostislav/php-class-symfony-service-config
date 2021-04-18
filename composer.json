@@ -25,5 +25,8 @@
     "psr-0": {
       "": "test/"
     }
+  },
+  "scripts": {
+    "test": "vendor/bin/phpunit test"
   }
 }
